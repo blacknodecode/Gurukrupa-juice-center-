@@ -100,7 +100,9 @@
 <body>
 
   <header class="top-header">
-    <h2>Gurukrupa Juice Center</h2>
+    <div class="container">
+      <h2>Gurukrupa Juice Center</h2>
+    </div>
   </header>
 
   <section id="home" class="hero container">
@@ -162,26 +164,10 @@
 
   <div id="win-info" class="window glass">
     <div class="win-header"><h3>ℹ️ Shop Details</h3><span onclick="closeAll()" style="cursor:pointer; color:var(--primary); font-size:2rem;">×</span></div>
-    
-    <div class="info-card">
-      <h4>Owner</h4>
-      <p>Ghansyam Mohabhiya</p>
-    </div>
-
-    <div class="info-card">
-      <h4>Location</h4>
-      <p>Gadkari Chowk, Saoner 📍</p>
-    </div>
-
-    <div class="info-card">
-      <h4>Contact / WhatsApp</h4>
-      <p>+91 8149701513</p>
-    </div>
-
-    <div class="info-card" style="border-color: #4CAF50;">
-      <h4>Status</h4>
-      <p style="color: #4CAF50;">Open Now (Fresh Stock Available)</p>
-    </div>
+    <div class="info-card"><h4>Owner</h4><p>Ghansyam Mohabhiya</p></div>
+    <div class="info-card"><h4>Location</h4><p>Gadkari Chowk, Saoner 📍</p></div>
+    <div class="info-card"><h4>Contact</h4><p>+91 8149701513</p></div>
+    <div class="info-card" style="border-color: #4CAF50;"><h4>Status</h4><p style="color: #4CAF50;">Open Now</p></div>
   </div>
 
   <nav class="app-nav glass">
@@ -196,7 +182,7 @@
       closeAll();
       if(id !== 'home') document.getElementById(id).style.display = 'block';
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      event.currentTarget.classList.add('active');
+      if(event) event.currentTarget.classList.add('active');
     }
     function closeAll() { document.querySelectorAll('.window').forEach(w => w.style.display = 'none'); }
 
@@ -222,7 +208,7 @@
     function handleAuth() {
       const name = document.getElementById('regName').value;
       const phone = document.getElementById('regPhone').value;
-      if(!name || !phone) { alert("Macho, details toh bharo!"); return; }
+      if(!name || !phone) { alert("Details dalo bhai!"); return; }
       localStorage.setItem('gurukrupaUser', JSON.stringify({name, phone}));
       checkUser();
     }
@@ -249,12 +235,22 @@
       navigator.geolocation.getCurrentPosition((pos) => {
         const juice = document.getElementById('juiceSelect').value;
         const total = document.getElementById('finalPrice').innerText;
-        const msg = `*GURUKRUPA BEAST ORDER*%0A👤 *Customer:* ${user.name}%0A🥤 *Juice:* ${juice}%0A💰 *Bill:* ${total}%0A📍 *Live Address:* https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
-        window.open(`https://wa.me/918149701513?text=${msg}`, '_blank');
+        
+        // Final Formatting
+        const message = `*GURUKRUPA BEAST ORDER*%0A` +
+                        `👤 *Name:* ${user.name}%0A` +
+                        `📞 *Phone:* ${user.phone}%0A` +
+                        `🥤 *Juice:* ${juice}%0A` +
+                        `💰 *Bill:* ${total}%0A` +
+                        `📍 *Live Address:* https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+        
+        window.open(`https://wa.me/918149701513?text=${message}`, '_blank');
+      }, () => {
+        alert("Location allow karo delivery ke liye!");
       });
     }
 
     window.onload = () => { checkUser(); updatePanel(); };
   </script>
 </body>
-</html>
+        </html>
