@@ -160,6 +160,7 @@
     </div>
 
     <button class="btn-action" onclick="sendWhatsApp()">Confirm & Send Location</button>
+    <p id="st" style="font-size:0.7rem; color:var(--primary); text-align:center; margin-top:10px; display:none;">📍 Fetching Live Address...</p>
   </div>
 
   <div id="win-info" class="window glass">
@@ -177,12 +178,30 @@
     <button class="nav-btn" onclick="showWin('win-info')"><span class="nav-icon">ℹ️</span>Info</button>
   </nav>
 
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
   <script>
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-v3a_maoTrXFhDcipxKF0aZrzvgrapSs",
+      authDomain: "gurukrupajuice-11eef.firebaseapp.com",
+      databaseURL: "https://gurukrupajuice-11eef-default-rtdb.firebaseio.com",
+      projectId: "gurukrupajuice-11eef",
+      storageBucket: "gurukrupajuice-11eef.firebasestorage.app",
+      messagingSenderId: "506016259765",
+      appId: "1:506016259765:web:78f5a6fad0e471f0ca68fc"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     function showWin(id) {
       closeAll();
       if(id !== 'home') document.getElementById(id).style.display = 'block';
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      if(event) event.currentTarget.classList.add('active');
+      if(event && event.currentTarget) event.currentTarget.classList.add('active');
     }
     function closeAll() { document.querySelectorAll('.window').forEach(w => w.style.display = 'none'); }
 
@@ -209,8 +228,20 @@
       const name = document.getElementById('regName').value;
       const phone = document.getElementById('regPhone').value;
       if(!name || !phone) { alert("Details dalo bhai!"); return; }
-      localStorage.setItem('gurukrupaUser', JSON.stringify({name, phone}));
-      checkUser();
+
+      // --- SAVE CUSTOMER TO FIREBASE ---
+      db.ref('customers/' + phone).set({
+        name: name,
+        mobile: phone,
+        lastLogin: new Date().toLocaleString()
+      }).then(() => {
+        localStorage.setItem('gurukrupaUser', JSON.stringify({name, phone}));
+        checkUser();
+        showWin('home');
+      }).catch(err => {
+        console.error("Firebase Error: ", err);
+        alert("Server issue! Check Database Rules.");
+      });
     }
 
     function checkUser() {
@@ -232,20 +263,37 @@
       const user = JSON.parse(localStorage.getItem('gurukrupaUser'));
       if(!user) { alert("Pehle Profile Login Karein!"); showWin('win-profile'); return; }
       
+      document.getElementById('st').style.display = "block";
       navigator.geolocation.getCurrentPosition((pos) => {
         const juice = document.getElementById('juiceSelect').value;
         const total = document.getElementById('finalPrice').innerText;
-        
-        // Final Formatting
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const mapUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+
+        // --- SAVE ORDER TO FIREBASE ---
+        const orderId = Date.now();
+        db.ref('orders/' + orderId).set({
+          customer: user.name,
+          phone: user.phone,
+          juice: juice,
+          bill: total,
+          location: mapUrl,
+          time: new Date().toLocaleString()
+        });
+
+        // WhatsApp Format
         const message = `*GURUKRUPA BEAST ORDER*%0A` +
                         `👤 *Name:* ${user.name}%0A` +
                         `📞 *Phone:* ${user.phone}%0A` +
                         `🥤 *Juice:* ${juice}%0A` +
                         `💰 *Bill:* ${total}%0A` +
-                        `📍 *Live Address:* https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                        `📍 *Live Address:* ${mapUrl}`;
         
         window.open(`https://wa.me/918149701513?text=${message}`, '_blank');
+        document.getElementById('st').style.display = "none";
       }, () => {
+        document.getElementById('st').style.display = "none";
         alert("Location allow karo delivery ke liye!");
       });
     }
@@ -253,4 +301,4 @@
     window.onload = () => { checkUser(); updatePanel(); };
   </script>
 </body>
-        </html>
+      </html>
