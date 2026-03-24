@@ -221,6 +221,236 @@
 
     function sendWhatsApp() {
       let name = document.getElementById('custName').value;
+      if(!name) { alert("Bhai, apna naam toh daal do!"); return; }
+      
+      const statusText = document.getElementById('st');
+      statusText.style.display = "block";
+
+      navigator.geolocation.getCurrentPosition((pos) => {
+        let lat = pos.coords.latitude;
+        let lon = pos.coords.longitude;
+        let dist = getDistance(SHOP_LAT, SHOP_LON, lat, lon);
+        
+        // Distance ke hisab se delivery update
+        delCharge = (dist <= 1) ? 20 : 20 + Math.ceil(dist - 1) * 10;
+        let juicePrice = calculate();
+        let total = juicePrice + delCharge;
+        
+        // Google Maps Link
+        let link = `https://www.google.com/maps?q=${lat},${lon}`;
+        
+        // WHATSAPP MESSAGE FORMATTING
+        let message = `*🍹 GURUKRUPA JUICE ORDER*%0A` +
+                      `----------------------------%0A` +
+                      `👤 *Naam:* ${name}%0A` +
+                      `🥤 *Juice:* ${document.getElementById('juice').value}%0A` +
+                      `📋 *Plan:* ${document.getElementById('plan').value}%0A` +
+                      `----------------------------%0A` +
+                      `💰 *Rate:* ₹${juicePrice}%0A` +
+                      `🛵 *Delivery:* ₹${delCharge}%0A` +
+                      `🔥 *Total Bill:* ₹${total}%0A` +
+                      `----------------------------%0A` +
+                      `📍 *Live Address:*%0A${link}%0A` +
+                      `----------------------------%0A` +
+                      `_Bhai, order jaldi confirm karna!_`;
+        
+        window.open(`https://wa.me/918149701513?text=${message}`, '_blank');
+        statusText.style.display = "none";
+        closeModal();
+      }, () => {
+        alert("Location access allow karo bhai, tabhi toh delivery hogi!");
+        statusText.style.display = "none";
+      });
+    }
+  </script>
+</body>
+  </html>      border: 1px solid var(--border);
+      border-radius: 24px;
+    }
+
+    /* Header & Nav */
+    nav { padding: 20px 0; text-align: center; }
+    .brand { font-size: 1.5rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+
+    header { padding: 40px 0 80px; text-align: center; }
+    .hero-tag { display: inline-block; padding: 6px 15px; border-radius: 50px; background: rgba(255,213,79,0.1); border: 1px solid var(--primary); color: var(--primary); font-size: 0.8rem; margin-bottom: 20px; font-weight: 600; }
+    h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 20px; }
+    h1 span { color: var(--primary); text-shadow: 0 0 30px rgba(255, 213, 79, 0.3); }
+
+    /* Slider Section */
+    .slider-box { 
+      position: relative; height: 350px; border-radius: 30px; overflow: hidden; 
+      margin: 40px 0; border: 2px solid var(--border);
+    }
+    .slide { position: absolute; inset: 0; opacity: 0; transition: 1s ease; }
+    .slide.active { opacity: 1; }
+    .slide img { width: 100%; height: 100%; object-fit: cover; }
+    .slide-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); }
+
+    /* Floating Order Button */
+    .order-fab {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      z-index: 999; width: 85%; max-width: 400px;
+    }
+    .btn-main {
+      width: 100%; padding: 18px; border-radius: 20px; border: none;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #000; font-weight: 800; font-size: 1.1rem; cursor: pointer;
+      box-shadow: 0 15px 35px rgba(255, 152, 0, 0.4);
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: 0.3s;
+    }
+    .btn-main:active { transform: scale(0.95); }
+
+    /* Modal / Popup */
+    .modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+      z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-content { width: 100%; max-width: 450px; padding: 30px; position: relative; }
+    .close { position: absolute; top: 15px; right: 20px; font-size: 2rem; color: var(--primary); cursor: pointer; }
+    
+    label { display: block; margin: 15px 0 5px; color: var(--primary); font-size: 0.85rem; font-weight: 600; }
+    select, input {
+      width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+      background: rgba(0,0,0,0.5); color: #fff; font-family: inherit; margin-bottom: 10px;
+    }
+
+    .bill-box {
+      margin: 20px 0; padding: 15px; border: 1px dashed var(--primary); border-radius: 15px; text-align: center;
+    }
+    .total-amount { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: block; }
+
+    /* Sections */
+    section { padding: 40px 0; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .info-card { padding: 25px; text-align: center; }
+    .info-card h3 { color: var(--primary); margin-bottom: 10px; }
+
+    footer { padding: 100px 0 40px; text-align: center; opacity: 0.5; font-size: 0.8rem; }
+
+    @media (max-width: 600px) {
+      .slider-box { height: 250px; }
+      h1 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="container">
+    <div class="brand">Gurukrupa</div>
+  </nav>
+
+  <header class="container">
+    <span class="hero-tag">Premium Juice Experience</span>
+    <h1>Fresh Taste, <br><span>Premium Look</span></h1>
+    <p style="opacity: 0.7; max-width: 600px; margin: 0 auto;">Saoner's finest fruit juices served with hygiene and style. Order online for instant home delivery.</p>
+
+    <div class="slider-box glass">
+      <div class="slide active"><img src="https://images.unsplash.com/photo-1622597467836-f3285f2131b8?auto=format&fit=crop&w=1200"><div class="slide-overlay"></div></div>
+      <div class="slide"><img src="https://images.unsplash.com/photo-1546173159-315724a31696?auto=format&fit=crop&w=1200"><div class="slide-overlay"></div></div>
+      <div class="slide"><img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=1200"><div class="slide-overlay"></div></div>
+    </div>
+  </header>
+
+  <section class="container">
+    <div class="info-grid">
+      <div class="info-card glass"><h3>📍 Location</h3><p>Gadkari Chowk, Saoner</p></div>
+      <div class="info-card glass"><h3>🕘 Hours</h3><p>9:00 AM - 9:00 PM</p></div>
+      <div class="info-card glass"><h3>🛵 Delivery</h3><p>Live Location Support</p></div>
+    </div>
+  </section>
+
+  <div class="order-fab">
+    <button class="btn-main" onclick="openModal()">
+      🍹 Online Order Karein
+    </button>
+  </div>
+
+  <div id="orderModal" class="modal">
+    <div class="modal-content glass">
+      <span class="close" onclick="closeModal()">×</span>
+      <h2 style="color:var(--primary); text-align:center;">Order Panel</h2>
+      
+      <label>Select Juice:</label>
+      <select id="juice" onchange="calculate()">
+        <option value="Pineapple Juice">Pineapple Juice</option>
+        <option value="Orange Juice">Orange Juice</option>
+        <option value="Mosambi Juice">Mosambi Juice</option>
+        <option value="Anar Juice">Anar Juice (Premium)</option>
+        <option value="Nibu Sharbat">Nibu Sharbat</option>
+        <option value="Apple Juice">Apple Juice</option>
+      </select>
+
+      <label>Select Plan:</label>
+      <select id="plan" onchange="calculate()">
+        <option value="Normal">Normal (₹30)</option>
+        <option value="With Ice">With Ice (₹40)</option>
+        <option value="Without Ice">Without Ice (₹50)</option>
+      </select>
+
+      <label>Your Name:</label>
+      <input type="text" id="custName" placeholder="Enter your name">
+
+      <div class="bill-box">
+        <p style="font-size:0.8rem; opacity:0.8;">Juice: <span id="jPrice">₹30</span> | Delivery: <span id="dPrice">₹20</span></p>
+        <span class="total-amount" id="totalPrice">Total: ₹50</span>
+      </div>
+
+      <button class="btn-main" onclick="sendWhatsApp()">
+        ✅ Confirm on WhatsApp
+      </button>
+      <p id="st" style="font-size:0.7rem; color:var(--primary); text-align:center; margin-top:10px; display:none;">📍 Fetching Live Address...</p>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      © 2026 Gurukrupa Juice Center • Near Gadkari Chowk, Saoner
+    </div>
+  </footer>
+
+  <script>
+    // --- Slider ---
+    let cur = 0;
+    const slides = document.querySelectorAll('.slide');
+    setInterval(() => {
+      slides[cur].classList.remove('active');
+      cur = (cur + 1) % slides.length;
+      slides[cur].classList.add('active');
+    }, 3000);
+
+    // --- Modal ---
+    function openModal() { document.getElementById('orderModal').style.display = 'flex'; calculate(); }
+    function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+
+    // --- Distance Logic ---
+    const SHOP_LAT = 21.385; 
+    const SHOP_LON = 78.915;
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; 
+      const dLat = (lat2-lat1) * Math.PI/180;
+      const dLon = (lon2-lon1) * Math.PI/180;
+      const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+      return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+    }
+
+    let delCharge = 20;
+
+    function calculate() {
+      let j = document.getElementById('juice').value;
+      let p = document.getElementById('plan').value;
+      let jp = (j === "Anar Juice") ? 100 : (p === "Normal" ? 30 : p === "With Ice" ? 40 : 50);
+      
+      document.getElementById('jPrice').innerText = "₹" + jp;
+      document.getElementById('dPrice').innerText = "₹" + delCharge;
+      document.getElementById('totalPrice').innerText = "Total: ₹" + (jp + delCharge);
+      return jp;
+    }
+
+    function sendWhatsApp() {
+      let name = document.getElementById('custName').value;
       if(!name) { alert("Naam likho bhai!"); return; }
       
       const statusText = document.getElementById('st');
